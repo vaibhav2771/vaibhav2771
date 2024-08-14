@@ -1,4 +1,7 @@
--- Create the sp_logs table
+
+-- Start of the SQL Script
+
+-- 1. Create the sp_logs Table
 DELIMITER //
 
 CREATE TABLE sp_logs (
@@ -10,10 +13,10 @@ CREATE TABLE sp_logs (
 
 DELIMITER ;
 
--- Update the stored procedure with logging
+-- 2. Create the Helper Stored Procedure
 DELIMITER //
 
-CREATE PROCEDURE qa_tomcatadd( 
+CREATE PROCEDURE log_and_run_qa_tomcatadd(
     IN p_newname VARCHAR(15),
     IN p_portno INT, 
     IN p_IP INT, 
@@ -25,6 +28,33 @@ CREATE PROCEDURE qa_tomcatadd(
     IN p_request_number VARCHAR(50),
     IN p_execution_date DATETIME,
     IN p_executed_by VARCHAR(50)
+)
+BEGIN
+    -- Log the procedure execution
+    INSERT INTO sp_logs (request_number, execution_date, executed_by, procedure_name)
+    VALUES (p_request_number, p_execution_date, p_executed_by, 'qa_tomcatadd');
+
+    -- Call the actual procedure
+    CALL qa_tomcatadd(
+        p_newname, p_portno, p_IP, p_instname, 
+        p_instemail, p_dbname, p_dbuname, p_dbpass
+    );
+END //
+
+DELIMITER ;
+
+-- 3. Create or Replace the qa_tomcatadd Stored Procedure
+DELIMITER //
+
+CREATE PROCEDURE qa_tomcatadd( 
+    IN p_newname VARCHAR(15),
+    IN p_portno INT, 
+    IN p_IP INT, 
+    IN p_instname VARCHAR(50), 
+    IN p_instemail VARCHAR(100), 
+    IN p_dbname VARCHAR(20), 
+    IN p_dbuname VARCHAR(15), 
+    IN p_dbpass VARCHAR(50)
 ) 
 BEGIN
 
@@ -34,10 +64,6 @@ BEGIN
     DECLARE v_podid INT;
     DECLARE v_tid INT;
     
-    -- Log the procedure execution
-    INSERT INTO sp_logs (request_number, execution_date, executed_by, procedure_name)
-    VALUES (p_request_number, p_execution_date, p_executed_by, 'qa_tomcatadd');
-
     -- Check if the tomcatname already exists
     SET tomcatname = (SELECT newname FROM tomcats WHERE newname = p_newname);
     SET tomcatrename = (SELECT newname FROM renameaction WHERE newname = p_newname);
@@ -70,3 +96,5 @@ BEGIN
 END //
 
 DELIMITER ;
+
+-- End of the SQL Script
