@@ -1,27 +1,2 @@
 
-DELIMITER //
-
-CREATE PROCEDURE update_bulkchefjob_status(
-    IN p_eventid INT,
-    IN p_podid INT,
-    IN p_appid INT
-)
-BEGIN
-    DECLARE exit handler for sqlexception
-    BEGIN
-        -- Handle SQL exceptions
-        ROLLBACK;
-        SELECT 'An error occurred: ' || SQLSTATE();
-    END;
-
-    UPDATE bulkchefjobs
-    SET scheduled = 0, completed = 3
-    WHERE eventid = p_eventid AND podid = p_podid AND appid = p_appid
-    LIMIT 1;
-END //
-
-DELIMITER ;
-
-
-CALL update_bulkchefjob_status(1205726, 261, 2022);
-
+stringl=$(if [ -f /eClinicalWorks/prodapps/$tomcatname/webapps/mobiledoa/WEB-INF/lib/ix-ecw-emr-fhir-server-2023-06-26-v-0.0.90.jar ] || [ -f /eClinicalWorks/prodapps/$tomcatname/webapps/mobiledoc/WEB-INF/lib/ix-ecw-emr-fhir-server-uds-2024-06-04.v.6.0.8.jar ]; then echo $tomcatname; fi;)
