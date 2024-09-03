@@ -1,3 +1,46 @@
+
+DELIMITER //
+
+CREATE PROCEDURE rename_tomcat (
+    IN p_newname VARCHAR(255),
+    IN p_appid INT,
+    IN p_podid INT,
+    IN p_executed_by VARCHAR(255),
+    IN p_IRNUMBER VARCHAR(20)
+)
+BEGIN
+    DECLARE v_tomcat_count INT;
+    DECLARE v_renameaction_count INT;
+    DECLARE v_message VARCHAR(100);
+
+    -- Check if the new name already exists in tomcats
+    SELECT COUNT(*) INTO v_tomcat_count FROM tomcats WHERE newname = p_newname AND appid = p_appid;
+
+    -- Check if the new name already exists in renameaction
+    SELECT COUNT(*) INTO v_renameaction_count FROM renameaction WHERE newname = p_newname AND appid = p_appid;
+
+    IF v_tomcat_count > 0 THEN
+        SET v_message = 'New name already exists in tomcats.';
+    ELSEIF v_renameaction_count > 0 THEN
+        SET v_message = 'New name already exists in renameaction.';
+    ELSE
+        -- Update tomcats table (replace with actual update logic)
+        UPDATE tomcats SET ... WHERE ...;
+
+        SET v_message = 'Tomcat renamed successfully.';
+    END IF;
+
+    -- Insert into renameaction table (if needed)
+    INSERT INTO renameaction (newname, appid, podid, executed_by, IRNUMBER)
+    VALUES (p_newname, p_appid, p_podid, p_executed_by, p_IRNUMBER);
+END //
+
+DELIMITER ;
+
+
+
+
+
 DELIMITER //
 
 CREATE PROCEDURE disable_tomcat3 (
