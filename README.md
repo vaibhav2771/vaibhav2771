@@ -1,24 +1,29 @@
 
 
-CREATE PROCEDURE update_practoaction (
-    IN p_patchid INT,
+DELIMITER //
+
+CREATE PROCEDURE update_ebo_data (
+    IN p_eboversion INT,
     IN p_podid INT,
-    IN p_executed_by VARCHAR(255),
-    IN p_ir_number VARCHAR(20)
+    IN p_practicefolder VARCHAR(255)
 )
 BEGIN
-    DECLARE v_message VARCHAR(100);
+    DECLARE v_limit INT;
 
-    UPDATE practoaction
-    SET scheduled = 0, completed = 3
-    WHERE patchid = p_patchid AND podid = p_podid;
+    -- Get the number of records for the specified practice folder
+    SELECT COUNT(*) INTO v_limit FROM ebo WHERE practicefolder = p_practicefolder;
 
-    IF ROW_COUNT() > 0 THEN
-        SET v_message = 'Records updated successfully.';
+    -- Update the data with the dynamic limit
+    IF v_limit > 0 THEN
+        UPDATE ebo
+        SET eboversion = p_eboversion
+        WHERE podid IN (p_podid)
+        AND eboversion != p_eboversion
+        AND practicefolder = p_practicefolder
+        LIMIT v_limit;
     ELSE
-        SET v_message = 'No records were updated. Please check the conditions.';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No records found for the specified practice folder.';
     END IF;
-
-    INSERT INTO storedproc_logs (sp_name, executed_by, executed_on, message, IR_Number)
-    VALUES ('update_practomaction', p_executed_by, NOW(), v_message, p_ir_number);
 END //
+
+DELIMITER ;
