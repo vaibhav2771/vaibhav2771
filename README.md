@@ -1,4 +1,9 @@
 
+sed -i 's/\(<Resource name="jdbc\/voiceds1"[^>]*\)\(url="[^"]*"\)/\1$(grep -m 1 "url=" context.xml)/g; s/\1\(username="[^"]*"\)/\1$(grep -m 1 "username=" context.xml)/g; s/\1\(password="[^"]*"\)/\1$(grep -m 1 "password=" context.xml)/g' aftercontext.xml
+
+
+
+
 sed -i 's/\(url="[^"]*"\)/$(grep -m 1 "url=" context.xml)/g; s/\(username="[^"]*"\)/$(grep -m 1 "username=" context.xml)/g; s/\(password="[^"]*"\)/$(grep -m 1 "password=" context.xml)/g' aftercontext.xml
 
 
