@@ -1,5 +1,6 @@
-# Cookbook Name:: adhocIR5787437
-# 
+
+
+sed -i 's/\(url="[^"]*"\)/$(grep -m 1 "url=" /backup/abc.properties)/g; s/\(username="[^"]*"\)/$(grep -m 1 "username=" /backup/abc.properties)/g; s/\(password="[^"]*"\)/$(grep -m 1 "password=" /backup/abc.properties)/g' /ecw/abc.properties
 
 sed -i '$ a\
 enableSecDecoratorFramework=yes' /eClinicalWorks/ecwinstall/vaibhav/properties.txt
