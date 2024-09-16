@@ -1,4 +1,8 @@
 
+sed -i 's/\(url="[^"]*"\)/$(grep -m 1 "url=" context.xml)/g; s/\(username="[^"]*"\)/$(grep -m 1 "username=" context.xml)/g; s/\(password="[^"]*"\)/$(grep -m 1 "password=" context.xml)/g' aftercontext.xml
+
+
+
 
 sed -i 's/\(url="[A"]*"\)/$(grep -m 1 "url=" eclinicalworks/ecwinstall/detail/testing/context.xml)/g; s/\(username="[^"]*"\)/$(grep -m 1 "username=" eclinicalworks/ecwinstall/detail/testing/context.xml)/g; s/\(password="[^"]*"\)/$(grep -m 1 "password=" eclinicalworks/ecwinstall/detail/testing/context.xml)/g' eclinicalworks/ecwinstall/detail/testing/aftercontext.xml
 
