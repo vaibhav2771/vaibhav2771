@@ -1,4 +1,43 @@
 
+DELIMITER //
+
+CREATE PROCEDURE insert_appserver(
+    IN p_name VARCHAR(255),
+    IN p_hostname VARCHAR(255),
+    IN p_chef_nodename VARCHAR(255),
+    IN p_ip VARCHAR(50),
+    IN p_podid INT,
+    IN p_apptype VARCHAR(50)
+)
+BEGIN
+    -- Check if the entry already exists
+    IF EXISTS (SELECT 1 FROM appservers 
+               WHERE name = p_name 
+               AND hostname = p_hostname 
+               AND chef_nodename = p_chef_nodename 
+               AND ip = p_ip 
+               AND podid = p_podid 
+               AND apptype = p_apptype) THEN
+        -- Throw message if entry exists
+        SELECT 'Entry already present!';
+    ELSE
+        -- Insert new entry if not exists
+        INSERT INTO appservers (
+            name, hostname, chef_nodename, ip, podid, apptype, active, liveserver, appostype
+        ) VALUES (
+            p_name, p_hostname, p_chef_nodename, p_ip, p_podid, p_apptype, '1', '1', 'lin'
+        );
+        -- Success message
+        SELECT 'Entry successfully added!';
+    END IF;
+END //
+
+DELIMITER ;
+
+
+
+
+
 
 sed -i 's/\(<Resource name="jdbc\/voiceds1"[^>]*\)\(url="[^"]*"\)/\1$(grep -m 1 "url=" context.xml)/g; s/\1\(username="[^"]*"\)/\1$(grep -m 1 "username=" context.xml)/g; s/\1\(password="[^"]*"\)/\1$(grep -m 1 "password=" context.xml)/g' aftercontext.xml
 
