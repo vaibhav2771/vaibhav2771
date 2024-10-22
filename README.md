@@ -1,4 +1,62 @@
 
+DELIMITER $$
+
+CREATE PROCEDURE UpdateCcmrTomcatsDynamic(
+    IN p_TABLENAME VARCHAR(255),
+    IN p_COMPONENT VARCHAR(255),
+    IN p_subcomponent VARCHAR(255),
+    IN p_tomcatname VARCHAR(255),
+    IN p_podid INT,
+    IN p_COLUMNNAME VARCHAR(255),
+    IN p_ccmrapids VARCHAR(255)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Rollback in case of error
+        ROLLBACK;
+        -- Signal error message
+        SELECT 'Error occurred, rolling back changes.';
+    END;
+    
+    -- Validation: check if inputs are valid
+    IF p_TABLENAME IS NULL OR p_COMPONENT IS NULL OR p_subcomponent IS NULL OR p_tomcatname IS NULL OR p_podid IS NULL OR p_COLUMNNAME IS NULL OR p_ccmrapids IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid input parameters';
+    ELSE
+        -- Begin transaction
+        START TRANSACTION;
+
+        -- Dynamic SQL query with both table name and column name
+        SET @query = CONCAT(
+            'UPDATE ', p_TABLENAME, ' SET COMPONENT = ? , subcomponent = ? ',
+            'WHERE tomcatname = ? AND podid = ? AND ', p_COLUMNNAME, ' IN (', p_ccmrapids, ')'
+        );
+
+        -- Prepare the statement and execute it
+        PREPARE stmt FROM @query;
+        EXECUTE stmt USING p_COMPONENT, p_subcomponent, p_tomcatname, p_podid;
+        DEALLOCATE PREPARE stmt;
+
+        -- Commit transaction if no error
+        COMMIT;
+    END IF;
+END $$
+
+DELIMITER ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Analyzing the Provided Stored Procedure and Adding Validation
 Understanding the Original Procedure:
 Based on the screenshot you've provided, the stored procedure appears to be updating the eboversion field in the ebo table. It seems to be checking if the eboid and practicefolder combination exists before performing the update.
