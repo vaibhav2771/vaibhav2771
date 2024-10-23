@@ -1,61 +1,47 @@
 
-DELIMITER $$
+DELIMITER //
 
-CREATE PROCEDURE UpdateCcmrTomcatsDynamic(
-    IN p_TABLENAME VARCHAR(255),
-    IN p_COMPONENT VARCHAR(255),
-    IN p_subcomponent VARCHAR(255),
+CREATE PROCEDURE update_ccmrtomcats_dynamic (
+    IN p_tablename VARCHAR(255),
     IN p_tomcatname VARCHAR(255),
-    IN p_podid INT,
-    IN p_COLUMNNAME VARCHAR(255),
-    IN p_ccmrapids VARCHAR(255), -- Comma-separated values for IN clause
-    IN p_executed_by VARCHAR(255) -- For logging purposes
+    IN p_ccmrappids TEXT,
+    IN p_component VARCHAR(255),
+    IN p_subcomponent VARCHAR(255)
 )
 BEGIN
-    DECLARE v_limit INT DEFAULT 0;
-    
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        -- Log the error in the Storedproc_logs table
-        INSERT INTO Storedproc_logs(sp_name, executed_by, executed_on, message)
-        VALUES('UpdateCcmrTomcatsDynamic', p_executed_by, NOW(), 'Error occurred during execution');
-    END;
-    
-    -- Validation: check if inputs are valid
-    IF p_TABLENAME IS NULL OR p_COMPONENT IS NULL OR p_subcomponent IS NULL OR p_tomcatname IS NULL OR p_podid IS NULL OR p_COLUMNNAME IS NULL OR p_ccmrapids IS NULL THEN
-        -- Log the validation error
-        INSERT INTO Storedproc_logs(sp_name, executed_by, executed_on, message)
-        VALUES('UpdateCcmrTomcatsDynamic', p_executed_by, NOW(), 'Invalid input parameters');
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid input parameters';
-    ELSE
-        -- Count the number of matching rows to determine LIMIT
-        SET @count_query = CONCAT(
-            'SELECT COUNT(*) INTO @total FROM ', p_TABLENAME, 
-            ' WHERE tomcatname = ? AND podid = ? AND ', p_COLUMNNAME, ' IN (', p_ccmrapids, ')'
-        );
-        
-        PREPARE count_stmt FROM @count_query;
-        EXECUTE count_stmt USING p_tomcatname, p_podid;
-        DEALLOCATE PREPARE count_stmt;
+    DECLARE v_affected_rows INT;
+    DECLARE v_error_message VARCHAR(255);
+    DECLARE v_count INT;
+    DECLARE v_limit INT;
 
-        -- Set LIMIT based on the number of rows fetched
-        SET v_limit = @total;
-
-        -- Construct dynamic update query
-        SET @query = CONCAT(
-            'UPDATE ', p_TABLENAME, ' SET COMPONENT = ? , subcomponent = ? ',
-            'WHERE tomcatname = ? AND podid = ? AND ', p_COLUMNNAME, ' IN (', p_ccmrapids, ') LIMIT ', v_limit
-        );
-
-        -- Prepare and execute the dynamic update statement
-        PREPARE stmt FROM @query;
-        EXECUTE stmt USING p_COMPONENT, p_subcomponent, p_tomcatname, p_podid;
-        DEALLOCATE PREPARE stmt;
-
-        -- Log success in the Storedproc_logs table
-        INSERT INTO Storedproc_logs(sp_name, executed_by, executed_on, message)
-        VALUES('UpdateCcmrTomcatsDynamic', p_executed_by, NOW(), 'Stored procedure executed successfully');
+    -- Validate input parameters
+    IF p_tablename IS NULL OR p_tomcatname IS NULL OR p_ccmrappids IS NULL OR p_component IS NULL OR p_subcomponent IS NULL THEN
+        SET v_error_message = 'All input parameters are required.';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = v_error_message;
     END IF;
-END $$
+
+    -- Count the number of matching rows
+    SET @count_query = CONCAT('SELECT COUNT(*) INTO @v_count FROM ', p_tablename, ' WHERE tomcatname = ? AND ccmrappid IN (', p_ccmrappids, ')');
+    PREPARE count_stmt FROM @count_query;
+    EXECUTE count_stmt USING p_tomcatname;
+    DEALLOCATE PREPARE count_stmt;
+
+    -- Set LIMIT based on the number of rows fetched
+    SET v_limit = @v_count;
+
+    -- Update the table
+    SET @update_query = CONCAT('UPDATE ', p_tablename, ' SET COMPONENT = ?, subcomponent = ? WHERE tomcatname = ? AND ccmrappid IN (', p_ccmrappids, ') LIMIT ', v_limit);
+    PREPARE update_stmt FROM @update_query;
+    EXECUTE update_stmt USING p_component, p_subcomponent, p_tomcatname;
+    DEALLOCATE PREPARE update_stmt;
+
+    -- Get the number of affected rows
+    SET v_affected_rows = ROW_COUNT();
+
+    -- Log the procedure execution and result
+    INSERT INTO storedprocedure_logs (procedure_name, affected_rows, error_message)
+    VALUES ('update_ccmrtomcats_dynamic', v_affected_rows, v_error_message);
+
+END //
 
 DELIMITER ;
