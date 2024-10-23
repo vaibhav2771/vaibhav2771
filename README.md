@@ -8,10 +8,12 @@ CREATE PROCEDURE UpdateCcmrTomcatsDynamic(
     IN p_tomcatname VARCHAR(255),
     IN p_podid INT,
     IN p_COLUMNNAME VARCHAR(255),
-    IN p_ccmrapids VARCHAR(255),
-    IN p_executed_by VARCHAR(255) -- New parameter for logging purposes
+    IN p_ccmrapids VARCHAR(255), -- Comma-separated values for IN clause
+    IN p_executed_by VARCHAR(255) -- For logging purposes
 )
 BEGIN
+    DECLARE v_limit INT DEFAULT 0;
+    
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         -- Log the error in the Storedproc_logs table
@@ -26,13 +28,26 @@ BEGIN
         VALUES('UpdateCcmrTomcatsDynamic', p_executed_by, NOW(), 'Invalid input parameters');
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid input parameters';
     ELSE
-        -- Construct dynamic query
+        -- Count the number of matching rows to determine LIMIT
+        SET @count_query = CONCAT(
+            'SELECT COUNT(*) INTO @total FROM ', p_TABLENAME, 
+            ' WHERE tomcatname = ? AND podid = ? AND ', p_COLUMNNAME, ' IN (', p_ccmrapids, ')'
+        );
+        
+        PREPARE count_stmt FROM @count_query;
+        EXECUTE count_stmt USING p_tomcatname, p_podid;
+        DEALLOCATE PREPARE count_stmt;
+
+        -- Set LIMIT based on the number of rows fetched
+        SET v_limit = @total;
+
+        -- Construct dynamic update query
         SET @query = CONCAT(
             'UPDATE ', p_TABLENAME, ' SET COMPONENT = ? , subcomponent = ? ',
-            'WHERE tomcatname = ? AND podid = ? AND ', p_COLUMNNAME, ' IN (', p_ccmrapids, ')'
+            'WHERE tomcatname = ? AND podid = ? AND ', p_COLUMNNAME, ' IN (', p_ccmrapids, ') LIMIT ', v_limit
         );
 
-        -- Prepare and execute the statement
+        -- Prepare and execute the dynamic update statement
         PREPARE stmt FROM @query;
         EXECUTE stmt USING p_COMPONENT, p_subcomponent, p_tomcatname, p_podid;
         DEALLOCATE PREPARE stmt;
