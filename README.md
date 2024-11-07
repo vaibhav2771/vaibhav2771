@@ -1,4 +1,47 @@
 
+
+To grep Tomcat version from "ps aux | grep tomcat", use:
+
+*Using grep*
+
+```
+bash
+ps aux | grep tomcat | grep -oP 'tomcat[\w-]+\/\K[\d.]+'
+```
+
+*Using sed*
+
+```
+bash
+ps aux | grep tomcat | sed -rn 's/.*tomcat[^0-9]*([0-9.]+).*/\1/p'
+```
+
+*Using awk*
+
+```
+bash
+ps aux | grep tomcat | awk -F '/' '{print $NF}' | awk -F ' ' '{print $1}'
+```
+
+These commands extract the Tomcat version from the process list.
+
+*Explanation*
+
+1. `ps aux`: Lists all processes.
+2. `grep tomcat`: Filters Tomcat-related processes.
+3. `grep -oP`, `sed`, or `awk`: Extracts the version number.
+
+*Tips*
+
+1. Adjust the pattern to match your Tomcat version format.
+2. Use `pgrep` instead of `ps aux | grep` for better performance.
+3. Verify the Tomcat version in the output.
+
+
+
+
+
+
 ps aux | grep -E 'tomcat.*java' | grep -v grep
 
 
