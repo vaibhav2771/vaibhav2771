@@ -1,5 +1,6 @@
 
-DELIMITER //
+DELIMITER ps -ef | grep tomcat | grep -v grep | awk '{print $11}' | grep -E "(tomcat[6789][01]_[A-Za-z0-9]{2,10})"
+/
 
 CREATE PROCEDURE update_ccmrtomcats_dynamic (
     IN p_tablename VARCHAR(255),
