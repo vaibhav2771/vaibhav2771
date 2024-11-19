@@ -1,4 +1,21 @@
 
+SELECT
+    c.name AS PodName,
+    b.name AS ServerName,
+    b.ip,
+    'EMR' AS EMR,
+    c.id AS PodID
+FROM
+    appservers b
+JOIN
+    pod c ON b.podid = c.id
+WHERE
+    b.active = '1'
+    AND c.active = '1'
+    AND b.ip NOT LIKE '%:%'
+ORDER BY
+    c.name
+LIMIT 1000000;
 
 To grep Tomcat version from "ps aux | grep tomcat", use:
 
