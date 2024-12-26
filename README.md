@@ -1,4 +1,34 @@
 
+Here’s the modified one-liner script without using a loop and starting with [ -d ... as per your requirement:
+
+[ -d /eclinicalworks/prodapps/tomcat_abc ] && [ ! -L /etc/init.d/tomcat_abc ] && echo "tomcat_abc"
+
+Explanation:
+
+[ -d /eclinicalworks/prodapps/tomcat_abc ]: Checks if the directory /eclinicalworks/prodapps/tomcat_abc exists.
+
+[ ! -L /etc/init.d/tomcat_abc ]: Ensures that the symbolic link /etc/init.d/tomcat_abc does not exist.
+
+echo "tomcat_abc": Prints the name tomcat_abc if both conditions are met.
+
+
+Notes:
+
+This script works for one specific Tomcat instance (tomcat_abc). If you want it to dynamically check multiple Tomcat instances, you would need a loop (which you've asked to avoid).
+
+If this format suits your workflow, you will need to replicate or modify it for each Tomcat instance you want to check.
+
+
+
+
+
+
+
+
+
+
+
+
 16:28 • Details
 21 December
 Logo for Gemini Apps
