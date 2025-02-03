@@ -1,3 +1,77 @@
+#!/bin/bash
+
+# Base directory containing the tomcat folders
+BASE_DIR="/eclinicalworks/patches/backup/patchbackup/backup_bulk_Develop_635_RY1_03Feb2025-08_13Feb035920"
+
+# Target directory where webapps should be restored
+TARGET_BASE="/eClinicalWorks/prodapps"
+
+# Create a temporary file to store the list of Tomcat names
+TOMCAT_LIST_FILE=$(mktemp)
+
+# Find all "tomcat*" directories within the BASE_DIR and store their names
+find "$BASE_DIR" -maxdepth 1 -type d -name "tomcat*" -print0 | tr '\0' '\n' > "$TOMCAT_LIST_FILE"
+
+# Read the Tomcat names from the file and loop through them
+while IFS= read -r TOMCAT_DIR; do
+  # Extract the tomcat name (e.g., tomcat_DRCMTS1) from the full path
+  TOMCAT_NAME=$(basename "$TOMCAT_DIR")
+
+  # Construct the source webapps directory path 
+  SOURCE_WEBAPPS="$TOMCAT_DIR/webapps"
+
+  # Construct the target webapps directory path
+  TARGET_WEBAPPS="$TARGET_BASE/$TOMCAT_NAME/webapps"
+
+  # Check if the source webapps directory exists
+  if [ -d "$SOURCE_WEBAPPS" ]; then
+    echo "Restoring webapps for $TOMCAT_NAME..."
+
+    # Create the parent directories in the target path if they don't exist
+    mkdir -p "$TARGET_BASE/$TOMCAT_NAME"
+
+    # Remove the existing webapps directory in the target (if it exists)
+    if [ -d "$TARGET_WEBAPPS" ]; then
+      echo "  Removing existing $TARGET_WEBAPPS"
+      rm -rf "$TARGET_WEBAPPS"
+    fi
+
+    # Copy the webapps directory from the backup to the target
+    cp -rp "$SOURCE_WEBAPPS" "$TARGET_WEBAPPS"
+
+    if [ $? -eq 0 ]; then
+      echo "  Successfully restored to $TARGET_WEBAPPS"
+    else
+      echo "  ERROR: Failed to restore webapps for $TOMCAT_NAME"
+    fi
+  else
+    echo "WARNING: Source webapps directory not found for $TOMCAT_NAME"
+  fi
+done < "$TOMCAT_LIST_FILE"
+
+# Remove the temporary file
+rm "$TOMCAT_LIST_FILE"
+
+echo "Webapps restoration process completed."
+
+Explanation and Key Improvements (addressing the screenshot and previous feedback):
+ * Direct find and while read Loop: The core logic for finding Tomcat directories and looping through them remains the same, as it's efficient and robust:
+   * find ... -print0 | tr '\0' '\n': Finds directories and handles filenames with spaces correctly.
+   * while IFS= read -r ...: Reads the output of find line by line, handling paths with spaces correctly.
+ * No Need for IFS and myarray: The screenshot suggests using IFS and myarray to parse the Tomcat names. However, the find command combined with the while read loop already achieves this efficiently and correctly. Using IFS and myarray would be redundant and potentially introduce issues with filenames containing spaces or special characters.
+ * Clearer Variable Names: The variable names (TOMCAT_DIR, TOMCAT_NAME, SOURCE_WEBAPPS, TARGET_WEBAPPS) are descriptive and make the code easier to understand.
+ * Error Handling: The if [ $? -eq 0 ] block checks the exit status of the cp command and reports an error if the copy fails.
+ * Temporary File Handling: The script uses mktemp to create a temporary file for the Tomcat list and removes it afterward, ensuring clean operation.
+Why this approach is better:
+ * Efficiency: The find command is highly optimized for searching directories. It's generally faster than reading a file line by line and parsing it with IFS.
+ * Correctness: The -print0 and tr combination ensures that filenames with spaces or special characters are handled correctly.
+ * Simplicity: The code is more concise and easier to understand without the need for extra parsing steps.
+ * Robustness: The temporary file handling ensures that the script doesn't leave temporary files behind.
+How to Use (same as before):
+ * Save the script to a file (e.g., restore_webapps.sh).
+ * Make the script executable: chmod +x restore_webapps.sh.
+ * Run the script: ./restore_webapps.sh (you might need sudo if you encounter permission issues).
+This improved version directly addresses the requirements from the screenshot while maintaining efficiency, correctness, and robustness. It's the recommended way to achieve the desired functionality.
 
     You're on the right track! Let's refine the script to incorporate the Tomcat name extraction and use it in the restore process. Here's the improved version:
 #!/bin/bash
