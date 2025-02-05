@@ -1,3 +1,4 @@
+find /data/eclinicalworks/cloudoci/apache2/webapps/cloudfeed/asp30/pod1/patches/bulk_patches -type f -mtime +365 -exec sh -c 'for file in "$@" ; do size=$(du -sh "$file" | awk "{print \$1}"); mod_time=$(ls -l "$file" | awk "{print \$6 \$7 \$8}"); echo "$file (size: $size, modified: $mod_time)"; done' sh {} +
 
 
 find /data/eclinicalworks/cloudoci/apache2/webapps/cloudfeed/asp30/pod1/patches/bulk_patches -type f -mtime +365 -exec sh -c 'size=$(du -sh "{}" | awk "{print $1}"); echo "{} (size: $size)"' \;
