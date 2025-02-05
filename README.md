@@ -1,3 +1,9 @@
+
+
+find /data/eclinicalworks/cloudoci/apache2/webapps/cloudfeed/asp30/pod1/patches/bulk_patches -type f -mtime +365 -exec sh -c 'size=$(du -sh "{}" | awk "{print $1}"); echo "{} (size: $size)"' \;
+
+
+
 #!/bin/bash
 
 # Base directory containing the tomcat folders
