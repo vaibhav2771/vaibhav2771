@@ -1,4 +1,42 @@
-find /data/eclinicalworks/cloudoci/apache2/webapps/cloudfeed/asp30/pod1/patches/bulk_patches -type f -mtime +365 -exec sh -c 'for file in "$@" ; do size=$(du -sh "$file" | awk "{print \$1}"); mod_time=$(ls -l "$file" | awk "{print \$6 \$7 \$8}"); echo "$file (size: $size, modified: $mod_time)"; done' sh {} +
+
+Let's break down this shell script line by line:
+string1=$(for d in /eClinicalWorks/prodapps/*; do [[ ! -L /etc/init.d/"${d##*/}" ]] && echo "${d##*/}"; done)
+
+1. string1=$(...) (Command Substitution):
+ * This is the core structure. It means:
+   * Execute the command(s) inside the parentheses (...).
+   * Capture the output of those commands.
+   * Assign that output to the variable string1.
+2. for d in /eClinicalWorks/prodapps/*; do ... done (For Loop):
+ * This is a for loop that iterates through a list of items.
+   * /eClinicalWorks/prodapps/*: This is a wildcard pattern. It expands to a list of all files and directories directly inside the /eClinicalWorks/prodapps/ directory.
+   * d: In each iteration of the loop, the current item from the list is assigned to the variable d.
+3. [[ ! -L /etc/init.d/"${d##*/}" ]] (Conditional Test):
+ * This is a conditional test using [[ ... ]], which is a more robust version of [ ... ] in bash.
+   * -L /etc/init.d/"${d##*/}": This checks if the file or directory specified by the path /etc/init.d/"${d##*/}" is a symbolic link.
+     * "${d##*/}": This is a parameter expansion that extracts the filename from the full path stored in d.
+       * d: The full path (e.g., /eClinicalWorks/prodapps/some_script).
+       * ##*/: This removes the longest prefix pattern matching */ (everything up to and including the last /). So, it leaves only the filename (some_script).
+   * !: This negates the result of the -L test. So, the condition is true if the file is NOT a symbolic link.
+4. && echo "${d##*/}" (Conditional Execution):
+ * &&: This is the "AND" operator. It means the command after && will be executed only if the command before && (the [[ ... ]] test) succeeds (returns a zero exit status, meaning it's true).
+ * echo "${d##*/}": If the [[ ... ]] test is true (the file is not a symbolic link), this command will:
+   * Extract the filename from d using "${d##*/}" (as explained above).
+   * Print that filename to standard output.
+In Summary:
+The script does the following:
+ * Iterates through all files and directories inside /eClinicalWorks/prodapps/.
+ * For each item, it checks if there is a file or directory with the same name in /etc/init.d/ that is a symbolic link.
+ * If there is NO symbolic link with the same name in /etc/init.d/, it prints the filename to standard output.
+ * It captures all the filenames that were printed and stores them in the variable string1.
+Essentially, this script is likely finding files in /eClinicalWorks/prodapps/ that are not linked to /etc/init.d/, suggesting they might be new or not yet properly set up as init scripts.
+
+
+
+
+
+
+/data/eclinicalworks/cloudoci/apache2/webapps/cloudfeed/asp30/pod1/patches/bulk_patches -type f -mtime +365 -exec sh -c 'for file in "$@" ; do size=$(du -sh "$file" | awk "{print \$1}"); mod_time=$(ls -l "$file" | awk "{print \$6 \$7 \$8}"); echo "$file (size: $size, modified: $mod_time)"; done' sh {} +
 
 
 find /data/eclinicalworks/cloudoci/apache2/webapps/cloudfeed/asp30/pod1/patches/bulk_patches -type f -mtime +365 -exec sh -c 'size=$(du -sh "{}" | awk "{print $1}"); echo "{} (size: $size)"' \;
