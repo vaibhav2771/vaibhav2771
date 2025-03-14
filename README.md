@@ -1,4 +1,21 @@
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Let's break down this shell script line by line:
 string1=$(for d in /eClinicalWorks/prodapps/*; do [[ ! -L /etc/init.d/"${d##*/}" ]] && echo "${d##*/}"; done)
 
