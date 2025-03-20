@@ -1,5 +1,8 @@
+sed '/threadlockleakprevwntion/I { :a; n; /<\/GlobalNamingResources>/!ba; /<GlobalNamingResources>/,/<\/GlobalNamingResources>/d; }' before_server.xml > after_server.xml
 
-sed '0,/<ThreadLocalLeakPreventionListener>/ { /<GlobalNamingResources>/,/<\/GlobalNamingResources>/d }' before_server.xml > after_server.xml
+sed 
+
+'0,/<ThreadLocalLeakPreventionListener>/ { /<GlobalNamingResources>/,/<\/GlobalNamingResources>/d }' before_server.xml > after_server.xml
 
 
 
