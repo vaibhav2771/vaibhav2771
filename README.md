@@ -1,4 +1,11 @@
 
+sed '/ThreadLocalLeakPreventionListener/{:a;n;/<\/GlobalNamingResources>/!ba;/<GlobalNamingResources>/,/<\/GlobalNamingResources>/d}' before_server.xml > after_server.xml
+
+
+
+
+
+
 Request #: 6008638
 mkdir -p /eClinicalWorks/logmgmt/cronjobs
 cd /eClinicalWorks/logmgmt/cronjobs
