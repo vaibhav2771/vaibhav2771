@@ -29,5 +29,7 @@ sed -i '0,/<GlobalNamingResources>/ {/<GlobalNamingResources>/,/<\/GlobalNamingR
 
 
 sed '0,/<GlobalNamingResources>/ {/^<GlobalNamingResources>/,/<\/GlobalNamingResources>/d}' server.txt
+sed '0,/<GlobalNamingResources>/ { :a; N; /<\/GlobalNamingResources>/!ba; d }' server.txt
 
+sed '0,/<GlobalNamingResources>/ {x; /<GlobalNamingResources>/ {x; :a; N; /<\/GlobalNamingResources>/!ba; d; }}' server.txt
 
