@@ -33,3 +33,7 @@ sed '0,/<GlobalNamingResources>/ { :a; N; /<\/GlobalNamingResources>/!ba; d }' s
 
 sed '0,/<GlobalNamingResources>/ {x; /<GlobalNamingResources>/ {x; :a; N; /<\/GlobalNamingResources>/!ba; d; }}' server.txt
 
+
+sed -i '0,/<GlobalNamingResources>/ {/<GlobalNamingResources>/,/<\/GlobalNamingResources>/ {d;};}' server.txt
+
+
